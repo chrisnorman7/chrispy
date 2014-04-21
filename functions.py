@@ -8,47 +8,51 @@ start, current = 0, gmtime()
 commands = {}
 
 def parse_range(spec):
-    if spec.find(":"):
-        spec = spec.split(":")
+    if not spec:
+        spec = [1, file.file_end()]
     else:
-        try:
-            spec = [int(spec),""]
-        except ValueError:
-            print("Valid ranges are written as from:to, where from and to are line numbers starting at 1, and not exceding the length of the currently loaded file. Either from or to can be ommited")
+        if spec.find(":"):
+            spec = spec.split(":")
+        else:
+            try:
+                spec = [int(spec),""]
+            except ValueError:
+                print("Valid ranges are written as from:to, where from and to are line numbers starting at 1, and not exceding the length of the currently loaded file. Either from or to can be ommited")
+                return 0
+        if not spec[0]:
+            spec[0] = 1
+        if not spec[1]:
+            spec[1] = file.file_end()
+        for i in range(2):
+            try:
+                spec[i] = int(spec[i])
+            except ValueError:
+                print("Not a number: %r." % spec[i])
+                return 0
+        if spec[0] < 1:
+            print("Error: %d less than 1." % spec[0])
             return 0
-    if not spec[0]:
-        spec[0] = 1
-    if not spec[1]:
-        spec[1] = file.file_end()
-    for i in range(2):
-        try:
-            spec[i] = int(spec[i])
-        except ValueError:
-            print("Not a number: %r." % spec[i])
+        elif spec[1] > file.file_end():
+            print("Error: %d would put your cursor past the end of the file." % spec[1])
             return 0
-    if spec[0] < 1:
-        print("Error: %d less than 1." % spec[0])
-        return 0
-    elif spec[1] > file.file_end():
-        print("Error: %d would put your cursor past the end of the file." % spec[1])
-        return 0
-    elif spec[0] > spec[1]:
-        print("Reverse range: %d:%d." % (spec[0], spec[1]))
-        return 0
+        elif spec[0] > spec[1]:
+            print("Reverse range: %d:%d." % (spec[0], spec[1]))
+            return 0
     return spec
 
 def register_command(command, function): commands[command] = function
 
-def do_list(range = "0:"):
+def do_list(range_spec = 0):
     """
 This command lists the contents of the current file according to the supplied range. Line numbers are also printed.
     """
-    i = 1
-    for c in file.contents:
-        print("[%d] %s" % (i, c))
-        i += 1
+    range_spec = parse_range(range_spec)
+    range_spec[1] -= 1
+    if range:
+        for c in range(*range_spec):
+            print("%d: %s" % (c, file.contents[c][0:-1]))
 
-def do_print(range = ""):
+def do_print(range = 0):
     """
     This command prints either the specified range, or the contents of the file without line numbers.
     """
