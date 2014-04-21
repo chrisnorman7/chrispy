@@ -7,5 +7,5 @@ def file_end():
 
 def add_line(line):
     global ins, contents
-    contents.insert(ins, line)
+    contents.insert(ins - 1, line)
     ins += 1

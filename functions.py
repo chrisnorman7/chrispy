@@ -48,14 +48,25 @@ This command lists the contents of the current file according to the supplied ra
         print("[%d] %s" % (i, c))
         i += 1
 
+def do_print(range = ""):
+    """
+    This command prints either the specified range, or the contents of the file without line numbers.
+    """
+    for line in file.contents:
+        print(line[0:-1])
+
 def exit():
     """
 This command quits the editor, saving the file you have been working on.
     """
-    f = open(file.fname, "w")
-    for line in file.contents:
-        f.write("%s\n" % line)
-    f.close()
+    if file.contents:
+        f = open(file.fname, "w")
+        for line in file.contents:
+            f.write("%s\n" % line)
+        f.close()
+        print("Saving changes to disk.")
+    else:
+        print("No changes to save.")
     quit("Exiting.")
 
 def do_help(cmd = "help"):
@@ -109,6 +120,7 @@ def timer():
         print("Started call at %d:%d." % (current.tm_hour, current.tm_min))
 
 register_command("list", do_list)
+register_command("print", do_print)
 register_command("exit", exit)
 register_command("quit", exit)
 register_command("help", do_help)
